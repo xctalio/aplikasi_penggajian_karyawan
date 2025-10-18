@@ -1,5 +1,6 @@
 class Karyawan {
   int? id;
+  String idKaryawan;
   String nama;
   String jabatan;
   double gajiPokok;
@@ -9,6 +10,7 @@ class Karyawan {
 
   Karyawan({
     this.id,
+    required this.idKaryawan,
     required this.nama,
     required this.jabatan,
     required this.gajiPokok,
@@ -20,6 +22,7 @@ class Karyawan {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'idKaryawan': idKaryawan,
       'nama': nama,
       'jabatan': jabatan,
       'gajiPokok': gajiPokok,
@@ -32,6 +35,7 @@ class Karyawan {
   factory Karyawan.fromMap(Map<String, dynamic> map) {
     return Karyawan(
       id: map['id'],
+      idKaryawan: map['idKaryawan'],
       nama: map['nama'],
       jabatan: map['jabatan'],
       gajiPokok: map['gajiPokok'],

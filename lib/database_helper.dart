@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -15,12 +15,13 @@ class DatabaseHelper {
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final pathStr = path.join(dbPath, filePath);
 
     return await openDatabase(
-      path,
-      version: 1,
+      pathStr,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -28,6 +29,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE karyawan (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idKaryawan TEXT NOT NULL,
         nama TEXT NOT NULL,
         jabatan TEXT NOT NULL,
         gajiPokok REAL NOT NULL,
@@ -36,35 +38,72 @@ class DatabaseHelper {
         totalGaji REAL NOT NULL
       )
     ''');
+    print('Database created successfully');
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS karyawan');
+      await _createDB(db, newVersion);
+      print('Database upgraded from v$oldVersion to v$newVersion');
+    }
   }
 
   Future<int> insertKaryawan(Map<String, dynamic> karyawan) async {
-    final db = await instance.database;
-    return await db.insert('karyawan', karyawan);
+    try {
+      final db = await instance.database;
+      final result = await db.insert('karyawan', karyawan);
+      print('Data inserted: $karyawan');
+      return result;
+    } catch (e) {
+      print('Insert error: $e');
+      rethrow;
+    }
   }
 
   Future<List<Map<String, dynamic>>> getAllKaryawan() async {
-    final db = await instance.database;
-    return await db.query('karyawan', orderBy: 'id DESC');
+    try {
+      final db = await instance.database;
+      final result = await db.query('karyawan', orderBy: 'id DESC');
+      print('Retrieved ${result.length} records');
+      return result;
+    } catch (e) {
+      print('Query error: $e');
+      return [];
+    }
   }
 
   Future<int> updateKaryawan(Map<String, dynamic> karyawan) async {
-    final db = await instance.database;
-    return await db.update(
-      'karyawan',
-      karyawan,
-      where: 'id = ?',
-      whereArgs: [karyawan['id']],
-    );
+    try {
+      final db = await instance.database;
+      final result = await db.update(
+        'karyawan',
+        karyawan,
+        where: 'id = ?',
+        whereArgs: [karyawan['id']],
+      );
+      print('Data updated: $karyawan');
+      return result;
+    } catch (e) {
+      print('Update error: $e');
+      rethrow;
+    }
   }
 
   Future<int> deleteKaryawan(int id) async {
-    final db = await instance.database;
-    return await db.delete(
-      'karyawan',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    try {
+      final db = await instance.database;
+      final result = await db.delete(
+        'karyawan',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      print('Data deleted: ID $id');
+      return result;
+    } catch (e) {
+      print('Delete error: $e');
+      rethrow;
+    }
   }
 
   Future close() async {

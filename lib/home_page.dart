@@ -30,27 +30,31 @@ class _HomePageState extends State<HomePage> {
     await DatabaseHelper.instance.deleteKaryawan(id);
     refreshData();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data berhasil dihapus')),
+      const SnackBar(
+        content: Text('Data berhasil dihapus'),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
-  void konfirmasiHapus(int id, String nama) {
+  void konfirmasiHapus(int id, String idKaryawan) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Konfirmasi Hapus'),
-        content: Text('Apakah Anda yakin ingin menghapus data $nama?'),
+        content: Text('Hapus data karyawan $idKaryawan?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Batal'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               hapusKaryawan(id);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -64,89 +68,224 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Sistem Penggajian Mobile'),
-        backgroundColor: Colors.blue,
+        title: const Text('Sistem Penggajian'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
-        elevation: 2,
       ),
       body: listKaryawan.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.folder_open, size: 100, color: Colors.grey[400]),
+                  Icon(Icons.people_outline, size: 80, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada data karyawan',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tekan tombol + untuk menambah',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  ),
                 ],
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               itemCount: listKaryawan.length,
               itemBuilder: (context, index) {
                 final karyawan = listKaryawan[index];
                 return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Text(
-                        karyawan.nama[0].toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  elevation: 1,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FormPage(karyawan: karyawan),
+                        ),
+                      );
+                      refreshData();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueAccent.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  karyawan.idKaryawan,
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 20),
+                                color: Colors.blue,
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FormPage(karyawan: karyawan),
+                                    ),
+                                  );
+                                  refreshData();
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 20),
+                                color: Colors.red,
+                                onPressed: () => konfirmasiHapus(
+                                  karyawan.id!,
+                                  karyawan.idKaryawan,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            karyawan.nama,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            karyawan.jabatan,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const Divider(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Gaji Pokok',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatRupiah(karyawan.gajiPokok),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Tunjangan',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatRupiah(karyawan.tunjangan),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Potongan',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatRupiah(karyawan.potongan),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Total Gaji',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      formatRupiah(karyawan.totalGaji),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    title: Text(
-                      karyawan.nama,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text('Jabatan: ${karyawan.jabatan}'),
-                        const SizedBox(height: 2),
-                        Text('Gaji Pokok: ${formatRupiah(karyawan.gajiPokok)}'),
-                        Text('Tunjangan: ${formatRupiah(karyawan.tunjangan)}'),
-                        Text('Potongan: ${formatRupiah(karyawan.potongan)}'),
-                        const Divider(),
-                        Text(
-                          'Total Gaji: ${formatRupiah(karyawan.totalGaji)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FormPage(karyawan: karyawan),
-                              ),
-                            );
-                            refreshData();
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => konfirmasiHapus(karyawan.id!, karyawan.nama),
-                        ),
-                      ],
-                    ),
-                    isThreeLine: true,
                   ),
                 );
               },
@@ -159,7 +298,7 @@ class _HomePageState extends State<HomePage> {
           );
           refreshData();
         },
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
