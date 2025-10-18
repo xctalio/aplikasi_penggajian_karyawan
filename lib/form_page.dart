@@ -69,7 +69,7 @@ class _FormPageState extends State<FormPage> {
       try {
         if (isEdit) {
           await DatabaseHelper.instance.updateKaryawan(karyawan.toMap());
-          print('✅ Data berhasil diupdate');
+          print('Data berhasil diupdate');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Data berhasil diupdate'),
@@ -78,7 +78,7 @@ class _FormPageState extends State<FormPage> {
           );
         } else {
           await DatabaseHelper.instance.insertKaryawan(karyawan.toMap());
-          print('✅ Data berhasil disimpan');
+          print('Data berhasil disimpan');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Data berhasil disimpan'),
@@ -88,7 +88,7 @@ class _FormPageState extends State<FormPage> {
         }
         Navigator.pop(context);
       } catch (e) {
-        print('❌ Error: $e');
+        print('Error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
